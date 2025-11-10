@@ -151,7 +151,7 @@ const ManageQuestionsScreen = () => {
   );
 
   return (
-    <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}>
       <Text style={styles.title}>{editingQuestionId ? 'Modifica Domanda' : 'Aggiungi Nuova Domanda'}</Text>
       
       <TextInput
@@ -224,6 +224,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
   title: {
     fontSize: 24,
