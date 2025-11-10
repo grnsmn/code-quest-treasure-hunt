@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, FlatList, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, FlatList, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 import { db } from '../config/firebaseConfig';
-import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const ManageQuestionsScreen = () => {
   const [order, setOrder] = useState('');
@@ -13,6 +13,7 @@ const ManageQuestionsScreen = () => {
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(true);
   const [questions, setQuestions] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState(null); // State to track which question is being edited
 
   const fetchQuestions = async () => {
     setIsFetchingQuestions(true);
@@ -42,7 +43,16 @@ const ManageQuestionsScreen = () => {
     fetchQuestions();
   };
 
-  const handleAddQuestion = async () => {
+  const clearForm = () => {
+    setOrder('');
+    setQuestionText('');
+    setAnswer('');
+    setCorrectResponseText('');
+    setNextQuestionUnlockCode('');
+    setEditingQuestionId(null);
+  };
+
+  const handleAddOrUpdateQuestion = async () => {
     if (!order || !questionText || !answer || !correctResponseText) {
       Alert.alert('Errore', 'Per favore, compila tutti i campi obbligatori (Ordine, Domanda, Risposta, Testo Risposta Corretta).');
       return;
@@ -54,7 +64,7 @@ const ManageQuestionsScreen = () => {
 
     setIsLoading(true);
     try {
-      const newQuestion = {
+      const questionData = {
         order: parseInt(order),
         questionText: questionText.trim(),
         answer: answer.trim().toLowerCase(), // Store answer in lowercase
@@ -62,25 +72,64 @@ const ManageQuestionsScreen = () => {
         ...(nextQuestionUnlockCode.trim() && { nextQuestionUnlockCode: nextQuestionUnlockCode.trim() }), // Only add if not empty
       };
 
-      await addDoc(collection(db, 'questions'), newQuestion);
-      Alert.alert('Successo', 'Domanda aggiunta con successo!');
+      if (editingQuestionId) {
+        // Update existing question
+        const questionRef = doc(db, 'questions', editingQuestionId);
+        await updateDoc(questionRef, questionData);
+        Alert.alert('Successo', 'Domanda aggiornata con successo!');
+      } else {
+        // Add new question
+        await addDoc(collection(db, 'questions'), questionData);
+        Alert.alert('Successo', 'Domanda aggiunta con successo!');
+      }
       
-      // Clear form
-      setOrder('');
-      setQuestionText('');
-      setAnswer('');
-      setCorrectResponseText('');
-      setNextQuestionUnlockCode('');
-      
-      // Refresh list
-      fetchQuestions();
+      clearForm();
+      fetchQuestions(); // Refresh list
 
     } catch (error) {
-      console.error("Error adding question: ", error);
-      Alert.alert('Errore', 'Impossibile aggiungere la domanda.');
+      console.error("Error adding/updating question: ", error);
+      Alert.alert('Errore', 'Impossibile salvare la domanda.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleEdit = (question) => {
+    setEditingQuestionId(question.id);
+    setOrder(String(question.order)); // Convert number to string for TextInput
+    setQuestionText(question.questionText);
+    setAnswer(question.answer);
+    setCorrectResponseText(question.correctResponseText);
+    setNextQuestionUnlockCode(question.nextQuestionUnlockCode || '');
+    // Scroll to top to show the form
+    // This would require a ref to ScrollView, but for simplicity, we'll assume user scrolls.
+  };
+
+  const handleDelete = async (questionId) => {
+    Alert.alert(
+      "Conferma Eliminazione",
+      "Sei sicuro di voler eliminare questa domanda?",
+      [
+        { text: "Annulla", style: "cancel" },
+        {
+          text: "Elimina",
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              await deleteDoc(doc(db, 'questions', questionId));
+              Alert.alert('Successo', 'Domanda eliminata con successo!');
+              fetchQuestions(); // Refresh list
+            } catch (error) {
+              console.error("Error deleting question: ", error);
+              Alert.alert('Errore', 'Impossibile eliminare la domanda.');
+            } finally {
+              setIsLoading(false);
+            }
+          },
+          style: "destructive",
+        },
+      ]
+    );
   };
 
   const renderQuestionItem = ({ item }) => (
@@ -90,13 +139,20 @@ const ManageQuestionsScreen = () => {
       <Text>Risposta: {item.answer}</Text>
       <Text>Indizio: {item.correctResponseText}</Text>
       {item.nextQuestionUnlockCode && <Text>Codice Sblocco: {item.nextQuestionUnlockCode}</Text>}
-      {/* Add Edit/Delete buttons here later */}
+      <View style={styles.itemActions}>
+        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
+          <Text style={styles.actionButtonText}>Modifica</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+          <Text style={styles.actionButtonText}>Elimina</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   return (
     <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}>
-      <Text style={styles.title}>Aggiungi Nuova Domanda</Text>
+      <Text style={styles.title}>{editingQuestionId ? 'Modifica Domanda' : 'Aggiungi Nuova Domanda'}</Text>
       
       <TextInput
         style={styles.input}
@@ -137,7 +193,14 @@ const ManageQuestionsScreen = () => {
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <Button title="Aggiungi Domanda" onPress={handleAddQuestion} />
+        <View>
+          <Button title={editingQuestionId ? "Aggiorna Domanda" : "Aggiungi Domanda"} onPress={handleAddOrUpdateQuestion} />
+          {editingQuestionId && (
+            <View style={styles.cancelButtonContainer}>
+              <Button title="Annulla Modifica" onPress={clearForm} color="gray" />
+            </View>
+          )}
+        </View>
       )}
 
       <Text style={styles.listHeader}>Domande Esistenti</Text>
@@ -205,6 +268,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     fontStyle: 'italic',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+  },
+  actionButton: {
+    paddingVertical: 8, // Increased padding
+    paddingHorizontal: 15, // Increased padding
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  editButton: {
+    backgroundColor: '#2196F3', // Blue
+  },
+  deleteButton: {
+    backgroundColor: '#F44336', // Red
+  },
+  actionButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  cancelButtonContainer: {
+    marginTop: 10,
   }
 });
 
