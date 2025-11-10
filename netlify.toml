@@ -1,6 +1,6 @@
 [build]
   command = "npm run web-build" # Comando per costruire la versione web di Expo
-  publish = "web-build"         # Directory dove Expo salva i file della build web
+  publish = "dist"         # Directory dove Expo salva i file della build web
 
 [[redirects]]
   from = "/*"
