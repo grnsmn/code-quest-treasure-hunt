@@ -1,105 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import { db } from '../config/firebaseConfig';
-import { doc, updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { db } from "../config/firebaseConfig";
+import { doc, updateDoc } from "firebase/firestore";
 
 const UnlockScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { userId, nextQuestionUnlockCode, currentOrder } = route.params;
 
-  const [manualCode, setManualCode] = useState('');
-  const [hasPermission, setHasPermission] = useState(null);
-  const [startScanner, setStartScanner] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const getBarCodeScannerPermissions = async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    };
-
-    getBarCodeScannerPermissions();
-  }, []);
+  const [manualCode, setManualCode] = useState("");
+  const [error, setError] = useState("");
 
   const verifyCode = async (code) => {
     if (code.trim().toLowerCase() === nextQuestionUnlockCode.toLowerCase()) {
       try {
         // Update user's progress in Firebase
-        const userDocRef = doc(db, 'users', userId);
+        const userDocRef = doc(db, "users", userId);
         await updateDoc(userDocRef, {
           currentQuestionOrder: currentOrder + 1,
         });
 
-        Alert.alert('Successo!', 'Domanda sbloccata!');
+        Alert.alert("Successo!", "Domanda sbloccata!");
         // Go back to the Question screen, which will auto-refresh to the new question
         navigation.pop(2);
-
       } catch (error) {
         console.error("Error updating user progress: ", error);
-        Alert.alert('Errore', 'Impossibile aggiornare i tuoi progressi.');
+        Alert.alert("Errore", "Impossibile aggiornare i tuoi progressi.");
       }
     } else {
-      setError('Codice Errato. Riprova.');
+      setError("Codice Errato. Riprova.");
     }
-  };
-
-  const handleBarCodeScanned = ({ type, data }) => {
-    setStartScanner(false);
-    verifyCode(data);
   };
 
   const handleManualSubmit = () => {
     verifyCode(manualCode);
   };
-  
-  const handleScanButton = () => {
-    if (hasPermission === null) {
-      Alert.alert('Permessi', 'Richiesta dei permessi per la fotocamera...');
-    } else if (hasPermission === false) {
-      Alert.alert('Permessi Negati', 'Per favore, abilita i permessi per la fotocamera nelle impostazioni del tuo dispositivo per usare lo scanner.');
-    } else {
-      setStartScanner(true);
-    }
-  };
-
-  if (startScanner) {
-    return (
-      <View style={styles.scannerContainer}>
-        <BarCodeScanner
-          onBarCodeScanned={handleBarCodeScanned}
-          style={StyleSheet.absoluteFillObject}
-        />
-        <Button title="Annulla Scansione" onPress={() => setStartScanner(false)} />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Inserisci il codice manualmente:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Codice di sblocco"
+        placeholder='Codice di sblocco'
         value={manualCode}
         onChangeText={(text) => {
           setManualCode(text);
           if (error) {
-            setError('');
+            setError("");
           }
         }}
-        autoCapitalize="none"
+        autoCapitalize='none'
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Button title="Conferma Codice" onPress={handleManualSubmit} />
-
-      <View style={styles.separator}>
-        <Text>oppure</Text>
-      </View>
-
-      <Button title="Scansiona QR Code" onPress={handleScanButton} />
+      <Button title='Conferma Codice' onPress={handleManualSubmit} />
     </View>
   );
 };
@@ -107,34 +61,29 @@ const UnlockScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
-  },
-  scannerContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
   },
   label: {
     fontSize: 16,
     marginBottom: 10,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
     paddingHorizontal: 10,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   separator: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 20,
   },
 });
