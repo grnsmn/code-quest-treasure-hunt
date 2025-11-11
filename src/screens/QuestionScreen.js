@@ -26,7 +26,7 @@ import {
 const QuestionScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { userId } = route.params;
+  const { userId, questionId } = route.params || {};
 
   const [questionData, setQuestionData] = useState(null);
   const [answer, setAnswer] = useState("");
@@ -35,36 +35,44 @@ const QuestionScreen = () => {
 
   const fetchQuestion = async () => {
     setIsLoading(true);
-    setQuestionData(null); // Reset question data on each fetch
+    setQuestionData(null);
     try {
-      // First, get the user's current progress
-      const userDocRef = doc(db, "users", userId);
-      const userDoc = await getDoc(userDocRef);
+      let questionDoc;
 
-      if (!userDoc.exists()) {
-        Alert.alert("Errore", "Utente non trovato.");
-        navigation.navigate("Register");
-        return;
+      if (questionId) {
+        // If questionId is passed via URL, fetch it directly
+        const questionDocRef = doc(db, "questions", questionId);
+        questionDoc = await getDoc(questionDocRef);
+      } else {
+        // Otherwise, get the user's current progress
+        const userDocRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+          Alert.alert("Errore", "Utente non trovato.");
+          navigation.navigate("Register");
+          return;
+        }
+        const userData = userDoc.data();
+        const currentQuestionOrder = userData.currentQuestionOrder || 1;
+
+        const questionsRef = collection(db, "questions");
+        const q = query(
+          questionsRef,
+          where("order", "==", currentQuestionOrder)
+        );
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          questionDoc = querySnapshot.docs[0];
+        }
       }
 
-      const userData = userDoc.data();
-      // Provide a default value of 1 if currentQuestionOrder is missing
-      const currentQuestionOrder = userData.currentQuestionOrder || 1; 
-
-      // Then, fetch the question corresponding to the user's progress
-      const questionsRef = collection(db, "questions");
-      const q = query(questionsRef, where("order", "==", currentQuestionOrder));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        // If no question is found for the current order, assume the game is over.
+      if (!questionDoc || !questionDoc.exists()) {
         navigation.navigate("End");
         return;
       }
 
-      const questionDoc = querySnapshot.docs[0];
       setQuestionData({ id: questionDoc.id, ...questionDoc.data() });
-
     } catch (error) {
       console.error("Error fetching question: ", error);
       Alert.alert("Errore", "Impossibile caricare la domanda.");
@@ -75,25 +83,33 @@ const QuestionScreen = () => {
 
   useFocusEffect(
     React.useCallback(() => {
+      if (!userId) {
+        navigation.navigate("Register", {
+          nextScreen: "Question",
+          questionId: questionId,
+        });
+        return;
+      }
       fetchQuestion();
-    }, [userId])
+    }, [userId, questionId])
   );
 
   const handleAnswer = () => {
     if (!questionData) {
-      Alert.alert("Errore", "Dati della domanda non caricati. Impossibile verificare la risposta.");
+      Alert.alert(
+        "Errore",
+        "Dati della domanda non caricati. Impossibile verificare la risposta."
+      );
       return;
     }
     if (answer.trim().toLowerCase() === questionData.answer.toLowerCase()) {
-      // Correct answer
       setError("");
-      setAnswer(""); // Clear input on success
+      setAnswer("");
       navigation.navigate("Success", {
         userId: userId,
         questionData: questionData,
       });
     } else {
-      // Incorrect answer
       setError("Risposta Sbagliata. Riprova! Sei quasi lì.");
     }
   };
@@ -111,7 +127,10 @@ const QuestionScreen = () => {
     return (
       <View style={styles.container}>
         <Text>Nessuna domanda trovata. Potresti aver finito il gioco!</Text>
-        <Button title='Torna alla Home' onPress={() => navigation.navigate("Register")} />
+        <Button
+          title='Torna alla Home'
+          onPress={() => navigation.navigate("Register")}
+        />
       </View>
     );
   }
@@ -158,9 +177,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
