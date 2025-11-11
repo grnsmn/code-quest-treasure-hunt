@@ -1,28 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, FlatList, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
-import { db } from '../config/firebaseConfig';
-import { collection, addDoc, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { db } from "../config/firebaseConfig";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 
 const ManageQuestionsScreen = () => {
-  const [order, setOrder] = useState('');
-  const [questionText, setQuestionText] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [correctResponseText, setCorrectResponseText] = useState('');
-  const [nextQuestionUnlockCode, setNextQuestionUnlockCode] = useState('');
+  const [order, setOrder] = useState("");
+  const [questionText, setQuestionText] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [correctResponseText, setCorrectResponseText] = useState("");
+  const [nextQuestionUnlockCode, setNextQuestionUnlockCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(true);
   const [questions, setQuestions] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [editingQuestionId, setEditingQuestionId] = useState(null); // State to track which question is being edited
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const flatListRef = useRef(null);
 
   const fetchQuestions = async () => {
     setIsFetchingQuestions(true);
     try {
-      const q = query(collection(db, 'questions'), orderBy('order'));
+      const q = query(collection(db, "questions"), orderBy("order"));
       const querySnapshot = await getDocs(q);
-      const questionsList = querySnapshot.docs.map(doc => ({
+      const questionsList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setQuestions(questionsList);
     } catch (error) {
@@ -44,21 +67,24 @@ const ManageQuestionsScreen = () => {
   };
 
   const clearForm = () => {
-    setOrder('');
-    setQuestionText('');
-    setAnswer('');
-    setCorrectResponseText('');
-    setNextQuestionUnlockCode('');
+    setOrder("");
+    setQuestionText("");
+    setAnswer("");
+    setCorrectResponseText("");
+    setNextQuestionUnlockCode("");
     setEditingQuestionId(null);
   };
 
   const handleAddOrUpdateQuestion = async () => {
     if (!order || !questionText || !answer || !correctResponseText) {
-      Alert.alert('Errore', 'Per favore, compila tutti i campi obbligatori (Ordine, Domanda, Risposta, Testo Risposta Corretta).');
+      Alert.alert(
+        "Errore",
+        "Per favore, compila tutti i campi obbligatori (Ordine, Domanda, Risposta, Testo Risposta Corretta)."
+      );
       return;
     }
     if (isNaN(parseInt(order))) {
-      Alert.alert('Errore', 'Il campo Ordine deve essere un numero.');
+      Alert.alert("Errore", "Il campo Ordine deve essere un numero.");
       return;
     }
 
@@ -67,28 +93,27 @@ const ManageQuestionsScreen = () => {
       const questionData = {
         order: parseInt(order),
         questionText: questionText.trim(),
-        answer: answer.trim().toLowerCase(), // Store answer in lowercase
+        answer: answer.trim().toLowerCase(),
         correctResponseText: correctResponseText.trim(),
-        ...(nextQuestionUnlockCode.trim() && { nextQuestionUnlockCode: nextQuestionUnlockCode.trim() }), // Only add if not empty
+        ...(nextQuestionUnlockCode.trim() && {
+          nextQuestionUnlockCode: nextQuestionUnlockCode.trim(),
+        }),
       };
 
       if (editingQuestionId) {
-        // Update existing question
-        const questionRef = doc(db, 'questions', editingQuestionId);
+        const questionRef = doc(db, "questions", editingQuestionId);
         await updateDoc(questionRef, questionData);
-        Alert.alert('Successo', 'Domanda aggiornata con successo!');
+        Alert.alert("Successo", "Domanda aggiornata con successo!");
       } else {
-        // Add new question
-        await addDoc(collection(db, 'questions'), questionData);
-        Alert.alert('Successo', 'Domanda aggiunta con successo!');
+        await addDoc(collection(db, "questions"), questionData);
+        Alert.alert("Successo", "Domanda aggiunta con successo!");
       }
-      
-      clearForm();
-      fetchQuestions(); // Refresh list
 
+      clearForm();
+      fetchQuestions();
     } catch (error) {
       console.error("Error adding/updating question: ", error);
-      Alert.alert('Errore', 'Impossibile salvare la domanda.');
+      Alert.alert("Errore", "Impossibile salvare la domanda.");
     } finally {
       setIsLoading(false);
     }
@@ -96,13 +121,12 @@ const ManageQuestionsScreen = () => {
 
   const handleEdit = (question) => {
     setEditingQuestionId(question.id);
-    setOrder(String(question.order)); // Convert number to string for TextInput
+    setOrder(String(question.order));
     setQuestionText(question.questionText);
     setAnswer(question.answer);
     setCorrectResponseText(question.correctResponseText);
-    setNextQuestionUnlockCode(question.nextQuestionUnlockCode || '');
-    // Scroll to top to show the form
-    // This would require a ref to ScrollView, but for simplicity, we'll assume user scrolls.
+    setNextQuestionUnlockCode(question.nextQuestionUnlockCode || "");
+    flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
   };
 
   const handleDelete = async (questionId) => {
@@ -116,12 +140,12 @@ const ManageQuestionsScreen = () => {
           onPress: async () => {
             setIsLoading(true);
             try {
-              await deleteDoc(doc(db, 'questions', questionId));
-              Alert.alert('Successo', 'Domanda eliminata con successo!');
-              fetchQuestions(); // Refresh list
+              await deleteDoc(doc(db, "questions", questionId));
+              Alert.alert("Successo", "Domanda eliminata con successo!");
+              fetchQuestions();
             } catch (error) {
               console.error("Error deleting question: ", error);
-              Alert.alert('Errore', 'Impossibile eliminare la domanda.');
+              Alert.alert("Errore", "Impossibile eliminare la domanda.");
             } finally {
               setIsLoading(false);
             }
@@ -138,22 +162,31 @@ const ManageQuestionsScreen = () => {
       <Text style={styles.questionItemText}>{item.questionText}</Text>
       <Text>Risposta: {item.answer}</Text>
       <Text>Indizio: {item.correctResponseText}</Text>
-      {item.nextQuestionUnlockCode && <Text>Codice Sblocco: {item.nextQuestionUnlockCode}</Text>}
+      {item.nextQuestionUnlockCode && (
+        <Text>Codice Sblocco: {item.nextQuestionUnlockCode}</Text>
+      )}
       <View style={styles.itemActions}>
-        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
+        <TouchableOpacity
+          onPress={() => handleEdit(item)}
+          style={[styles.actionButton, styles.editButton]}
+        >
           <Text style={styles.actionButtonText}>Modifica</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+        <TouchableOpacity
+          onPress={() => handleDelete(item.id)}
+          style={[styles.actionButton, styles.deleteButton]}
+        >
           <Text style={styles.actionButtonText}>Elimina</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}>
-      <Text style={styles.title}>{editingQuestionId ? 'Modifica Domanda' : 'Aggiungi Nuova Domanda'}</Text>
-      
+  const renderHeader = () => (
+    <>
+      <Text style={styles.title}>
+        {editingQuestionId ? "Modifica Domanda" : "Aggiungi Nuova Domanda"}
+      </Text>
       <TextInput
         style={styles.input}
         placeholder="Ordine (es. 1, 2, 3)"
@@ -189,78 +222,109 @@ const ManageQuestionsScreen = () => {
         onChangeText={setNextQuestionUnlockCode}
         autoCapitalize="none"
       />
-
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <View>
-          <Button title={editingQuestionId ? "Aggiorna Domanda" : "Aggiungi Domanda"} onPress={handleAddOrUpdateQuestion} />
+          <Button
+            title={editingQuestionId ? "Aggiorna Domanda" : "Aggiungi Domanda"}
+            onPress={handleAddOrUpdateQuestion}
+          />
           {editingQuestionId && (
             <View style={styles.cancelButtonContainer}>
-              <Button title="Annulla Modifica" onPress={clearForm} color="gray" />
+              <Button
+                title="Annulla Modifica"
+                onPress={clearForm}
+                color="gray"
+              />
             </View>
           )}
         </View>
       )}
-
       <Text style={styles.listHeader}>Domande Esistenti</Text>
-      {isFetchingQuestions ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <FlatList
-          data={questions}
-          renderItem={renderQuestionItem}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<Text style={styles.emptyListText}>Nessuna domanda ancora. Aggiungine una!</Text>}
-          scrollEnabled={false} // FlatList inside ScrollView
-        />
-      )}
-    </ScrollView>
+    </>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.keyboardAvoidingContainer}
+    >
+      <View style={styles.container}>
+        {isFetchingQuestions ? (
+          <ActivityIndicator style={styles.loadingIndicator} size="large" color="#0000ff" />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={questions}
+            renderItem={renderQuestionItem}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={
+              <Text style={styles.emptyListText}>
+                Nessuna domanda ancora. Aggiungine una!
+              </Text>
+            }
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+            }
+            contentContainerStyle={styles.listContentContainer}
+          />
+        )}
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  keyboardAvoidingContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
-  contentContainer: {
-    flexGrow: 1,
+  listContentContainer: {
+    padding: 20,
+  },
+  loadingIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
-    width: '100%',
+    width: "100%",
     minHeight: 50,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   listHeader: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 30,
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
   questionItem: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     padding: 15,
     marginBottom: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   questionItemOrder: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   questionItemText: {
@@ -268,34 +332,34 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   emptyListText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   itemActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     marginTop: 10,
   },
   actionButton: {
-    paddingVertical: 8, // Increased padding
-    paddingHorizontal: 15, // Increased padding
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 5,
     marginLeft: 10,
   },
   editButton: {
-    backgroundColor: '#2196F3', // Blue
+    backgroundColor: "#2196F3",
   },
   deleteButton: {
-    backgroundColor: '#F44336', // Red
+    backgroundColor: "#F44336",
   },
   actionButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   cancelButtonContainer: {
     marginTop: 10,
-  }
+  },
 });
 
 export default ManageQuestionsScreen;

@@ -31,6 +31,7 @@ const QuestionScreen = () => {
   const [questionData, setQuestionData] = useState(null);
   const [answer, setAnswer] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const fetchQuestion = async () => {
     setIsLoading(true);
@@ -85,15 +86,16 @@ const QuestionScreen = () => {
     }
     if (answer.trim().toLowerCase() === questionData.answer.toLowerCase()) {
       // Correct answer
+      setError("");
+      setAnswer(""); // Clear input on success
       navigation.navigate("Success", {
         userId: userId,
         questionData: questionData,
       });
     } else {
       // Incorrect answer
-      Alert.alert("Risposta Sbagliata", "Riprova! Sei quasi lì.");
+      setError("Risposta Sbagliata. Riprova! Sei quasi lì.");
     }
-    setAnswer(""); // Clear input field
   };
 
   if (isLoading) {
@@ -121,8 +123,14 @@ const QuestionScreen = () => {
         style={styles.input}
         placeholder='Scrivi la tua risposta qui'
         value={answer}
-        onChangeText={setAnswer}
+        onChangeText={(text) => {
+          setAnswer(text);
+          if (error) {
+            setError("");
+          }
+        }}
       />
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
       <Button title='Conferma Risposta' onPress={handleAnswer} />
     </View>
   );
@@ -148,6 +156,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 20,
     paddingHorizontal: 10,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

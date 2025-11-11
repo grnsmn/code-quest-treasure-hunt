@@ -34,7 +34,7 @@ const UnlockScreen = () => {
 
         Alert.alert('Successo!', 'Domanda sbloccata!');
         // Go back to the Question screen, which will auto-refresh to the new question
-        navigation.goBack();
+        navigation.pop(2);
 
       } catch (error) {
         console.error("Error updating user progress: ", error);
