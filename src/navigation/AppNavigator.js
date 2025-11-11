@@ -16,7 +16,7 @@ import ManageQuestionsScreen from "../screens/ManageQuestionsScreen";
 const Stack = createStackNavigator();
 const prefixes = __DEV__
   ? ["http://localhost:8081"]
-  : ["https://code-quest-treasure-hunt.netlify.app"];
+  : ["https://6913b5c256572c00085668dc--code-quest-treasure-hunt.netlify.app"];
 
 const linking = {
   prefixes: prefixes,
