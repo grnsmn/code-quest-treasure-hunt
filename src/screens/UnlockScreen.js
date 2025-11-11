@@ -13,6 +13,7 @@ const UnlockScreen = () => {
   const [manualCode, setManualCode] = useState('');
   const [hasPermission, setHasPermission] = useState(null);
   const [startScanner, setStartScanner] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -41,7 +42,7 @@ const UnlockScreen = () => {
         Alert.alert('Errore', 'Impossibile aggiornare i tuoi progressi.');
       }
     } else {
-      Alert.alert('Codice Errato', 'Il codice inserito non è corretto. Riprova.');
+      setError('Codice Errato. Riprova.');
     }
   };
 
@@ -83,9 +84,15 @@ const UnlockScreen = () => {
         style={styles.input}
         placeholder="Codice di sblocco"
         value={manualCode}
-        onChangeText={setManualCode}
+        onChangeText={(text) => {
+          setManualCode(text);
+          if (error) {
+            setError('');
+          }
+        }}
         autoCapitalize="none"
       />
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
       <Button title="Conferma Codice" onPress={handleManualSubmit} />
 
       <View style={styles.separator}>
@@ -120,6 +127,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 20,
     paddingHorizontal: 10,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   separator: {
     alignItems: 'center',
