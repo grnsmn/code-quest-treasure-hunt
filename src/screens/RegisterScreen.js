@@ -27,6 +27,7 @@ const RegisterScreen = () => {
       try {
         if (authenticatedUser) {
           setUser(authenticatedUser);
+
           if (authenticatedUser.isAnonymous) {
             const userDocRef = doc(db, "users", authenticatedUser.uid);
             const userDoc = await getDoc(userDocRef);

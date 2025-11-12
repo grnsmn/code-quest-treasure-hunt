@@ -6,7 +6,7 @@ import { Text } from "react-native";
 import RegisterScreen from "../screens/RegisterScreen";
 import QuestionScreen from "../screens/QuestionScreen";
 import SuccessScreen from "../screens/SuccessScreen";
-import UnlockScreen from "../screens/UnlockScreen";
+
 import EndScreen from "../screens/EndScreen";
 import AdminLoginScreen from "../screens/AdminLoginScreen";
 import AdminDashboardScreen from "../screens/AdminDashboardScreen";
@@ -57,11 +57,7 @@ const AppNavigator = () => {
           component={SuccessScreen}
           options={{ title: "Risposta Corretta!" }}
         />
-        <Stack.Screen
-          name='Unlock'
-          component={UnlockScreen}
-          options={{ title: "Sblocca Domanda" }}
-        />
+
         <Stack.Screen
           name='End'
           component={EndScreen}

@@ -13,7 +13,7 @@ import {
   useNavigation,
   useFocusEffect,
 } from "@react-navigation/native";
-import { db } from "../config/firebaseConfig";
+import { db, auth } from "../config/firebaseConfig";
 import {
   collection,
   query,
@@ -21,57 +21,93 @@ import {
   getDocs,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 const QuestionScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { userId, questionId } = route.params || {};
+  const { questionId } = route.params || {}; // questionId can still come from route.params
 
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [questionData, setQuestionData] = useState(null);
   const [answer, setAnswer] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserId(user.uid);
+      } else {
+        // If no user is authenticated, navigate to Register screen
+        navigation.navigate("Register");
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // ... rest of the component ...
+
   const fetchQuestion = async () => {
+    if (!currentUserId) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setQuestionData(null);
     try {
-      let questionDoc;
+      const userDocRef = doc(db, "users", currentUserId);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        Alert.alert("Errore", "Dati utente non trovati.");
+        navigation.navigate("Register");
+        return;
+      }
+
+      const userData = userDoc.data();
+      const userCurrentQuestionOrder = userData.currentQuestionOrder || 1;
+
+      let questionToFetchOrder;
 
       if (questionId) {
-        // If questionId is passed via URL, fetch it directly
-        const questionDocRef = doc(db, "questions", questionId);
-        questionDoc = await getDoc(questionDocRef);
-      } else {
-        // Otherwise, get the user's current progress
-        const userDocRef = doc(db, "users", userId);
-        const userDoc = await getDoc(userDocRef);
-
-        if (!userDoc.exists()) {
-          Alert.alert("Errore", "Utente non trovato.");
+        const parsedQuestionIdAsOrder = parseInt(questionId, 10);
+        if (isNaN(parsedQuestionIdAsOrder)) {
+          Alert.alert("Errore", "ID domanda non valido.");
           navigation.navigate("Register");
           return;
         }
-        const userData = userDoc.data();
-        const currentQuestionOrder = userData.currentQuestionOrder || 1;
 
-        const questionsRef = collection(db, "questions");
-        const q = query(
-          questionsRef,
-          where("order", "==", currentQuestionOrder)
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          questionDoc = querySnapshot.docs[0];
+        // We assume the questionId from the URL corresponds to the 'order' field.
+        if (parsedQuestionIdAsOrder > userCurrentQuestionOrder) {
+          Alert.alert(
+            "Domanda Bloccata",
+            "Non hai ancora sbloccato questa domanda. Rispondi a quella attuale per procedere."
+          );
+          navigation.navigate("Register");
+          return;
         }
+        questionToFetchOrder = parsedQuestionIdAsOrder;
+      } else {
+        questionToFetchOrder = userCurrentQuestionOrder;
       }
 
-      if (!questionDoc || !questionDoc.exists()) {
+      const questionsRef = collection(db, "questions");
+      const q = query(
+        questionsRef,
+        where("order", "==", questionToFetchOrder)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
         navigation.navigate("End");
         return;
       }
 
+      const questionDoc = querySnapshot.docs[0];
       setQuestionData({ id: questionDoc.id, ...questionDoc.data() });
     } catch (error) {
       console.error("Error fetching question: ", error);
@@ -83,32 +119,40 @@ const QuestionScreen = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (!userId) {
-        navigation.navigate("Register", {
-          nextScreen: "Question",
-          questionId: questionId,
-        });
-        return;
+      if (currentUserId) {
+        fetchQuestion();
       }
-      fetchQuestion();
-    }, [userId, questionId])
+    }, [currentUserId, questionId])
   );
 
-  const handleAnswer = () => {
+  const handleAnswer = async () => {
     if (!questionData) {
-      Alert.alert(
-        "Errore",
-        "Dati della domanda non caricati. Impossibile verificare la risposta."
-      );
+      Alert.alert("Errore", "Dati della domanda non caricati.");
       return;
     }
+
     if (answer.trim().toLowerCase() === questionData.answer.toLowerCase()) {
       setError("");
       setAnswer("");
-      navigation.navigate("Success", {
-        userId: userId,
-        questionData: questionData,
-      });
+
+      try {
+        const nextQuestionOrder = questionData.order + 1;
+        const userDocRef = doc(db, "users", currentUserId);
+        await updateDoc(userDocRef, {
+          currentQuestionOrder: nextQuestionOrder,
+        });
+
+        navigation.navigate("Success", {
+          userId: currentUserId,
+          questionData: questionData,
+        });
+      } catch (error) {
+        console.error("Error updating user progress: ", error);
+        Alert.alert(
+          "Errore",
+          "Impossibile aggiornare i tuoi progressi. Riprova."
+        );
+      }
     } else {
       setError("Risposta Sbagliata. Riprova! Sei quasi lì.");
     }
@@ -137,20 +181,27 @@ const QuestionScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.questionText}>{questionData.questionText}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder='Scrivi la tua risposta qui'
-        value={answer}
-        onChangeText={(text) => {
-          setAnswer(text);
-          if (error) {
-            setError("");
-          }
-        }}
-      />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Button title='Conferma Risposta' onPress={handleAnswer} />
+      {questionData.title && (
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleText}>{questionData.title}</Text>
+        </View>
+      )}
+      <View style={styles.contentContainer}>
+        <Text style={styles.questionText}>{questionData.questionText}</Text>
+        <TextInput
+          style={styles.input}
+          placeholder='Scrivi la tua risposta qui'
+          value={answer}
+          onChangeText={(text) => {
+            setAnswer(text);
+            if (error) {
+              setError("");
+            }
+          }}
+        />
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <Button title='Conferma Risposta' onPress={handleAnswer} />
+      </View>
     </View>
   );
 };
@@ -158,9 +209,25 @@ const QuestionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    // Removed justifyContent and alignItems from here to allow children to control their layout
     padding: 20,
+    alignItems: "stretch", // Allows children to stretch horizontally
+  },
+  titleContainer: {
+    paddingTop: 20, // Add some padding from the top of the screen
+    marginBottom: 20,
+    alignItems: "center", // Center the title horizontally
+  },
+  titleText: {
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  contentContainer: {
+    flex: 1, // Takes up remaining space
+    justifyContent: "center", // Centers content vertically
+    alignItems: "center", // Centers content horizontally
+    width: "100%", // Ensures content takes full width
   },
   questionText: {
     fontSize: 22,
