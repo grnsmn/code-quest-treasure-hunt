@@ -55,7 +55,7 @@ const AppNavigator = () => {
         <Stack.Screen
           name='Success'
           component={SuccessScreen}
-          options={{ title: "Risposta Corretta!" }}
+          options={{ title: "Risposta Corretta!", headerBackVisible: false }}
         />
 
         <Stack.Screen

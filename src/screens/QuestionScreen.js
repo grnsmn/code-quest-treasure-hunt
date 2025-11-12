@@ -28,7 +28,7 @@ import { onAuthStateChanged } from "firebase/auth";
 const QuestionScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { questionId } = route.params || {}; // questionId can still come from route.params
+  const { questionId } = route.params || {};
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [questionData, setQuestionData] = useState(null);
@@ -41,14 +41,16 @@ const QuestionScreen = () => {
       if (user) {
         setCurrentUserId(user.uid);
       } else {
-        // If no user is authenticated, navigate to Register screen
         navigation.navigate("Register");
       }
     });
     return unsubscribe;
   }, []);
 
-  // ... rest of the component ...
+  const generateRedemptionCode = () => {
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `DEVFEST-CT-2025-${randomSuffix}`;
+  };
 
   const fetchQuestion = async () => {
     if (!currentUserId) {
@@ -81,7 +83,6 @@ const QuestionScreen = () => {
           return;
         }
 
-        // We assume the questionId from the URL corresponds to the 'order' field.
         if (parsedQuestionIdAsOrder > userCurrentQuestionOrder) {
           Alert.alert(
             "Domanda Bloccata",
@@ -136,21 +137,28 @@ const QuestionScreen = () => {
       setAnswer("");
 
       try {
-        const nextQuestionOrder = questionData.order + 1;
-        const userDocRef = doc(db, "users", currentUserId);
-        await updateDoc(userDocRef, {
-          currentQuestionOrder: nextQuestionOrder,
-        });
+        if (questionData.isLastQuestion === true) {
+          // Last question answered correctly
+          const redemptionCode = generateRedemptionCode();
+          navigation.navigate("End", { redemptionCode: redemptionCode });
+        } else {
+          // Not the last question, update progress and go to Success
+          const nextQuestionOrder = questionData.order + 1;
+          const userDocRef = doc(db, "users", currentUserId);
+          await updateDoc(userDocRef, {
+            currentQuestionOrder: nextQuestionOrder,
+          });
 
-        navigation.navigate("Success", {
-          userId: currentUserId,
-          questionData: questionData,
-        });
+          navigation.navigate("Success", {
+            userId: currentUserId,
+            questionData: questionData,
+          });
+        }
       } catch (error) {
-        console.error("Error updating user progress: ", error);
+        console.error("Error updating user progress or navigating:", error);
         Alert.alert(
           "Errore",
-          "Impossibile aggiornare i tuoi progressi. Riprova."
+          "Impossibile aggiornare i tuoi progressi o navigare. Riprova."
         );
       }
     } else {
