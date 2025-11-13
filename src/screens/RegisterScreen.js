@@ -92,7 +92,7 @@ const RegisterScreen = () => {
           questionId: questionId,
         });
       } else {
-        navigation.navigate("Question", { userId: user.uid });
+        navigation.navigate("Question", { userId: user.uid, questionId: 1 });
       }
     } catch (error) {
       console.error("Error starting game: ", error);
