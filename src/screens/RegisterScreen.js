@@ -13,6 +13,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { db, auth } from "../config/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import LottieView from "lottie-react-native";
 
 const RegisterScreen = () => {
   const [username, setUsername] = useState("");
@@ -108,7 +109,7 @@ const RegisterScreen = () => {
     return (
       <View style={styles.container}>
         <ActivityIndicator size='large' color='#0000ff' />
-        <Text>Autenticazione in corso...</Text>
+        {/* Lottie Animation */}
       </View>
     );
   }
@@ -117,6 +118,14 @@ const RegisterScreen = () => {
     <View style={styles.container}>
       <View style={styles.mainContent}>
         <Text style={styles.title}>Caccia al Tesoro</Text>
+        <View>
+          <LottieView
+            source={require("../../assets/lottie/TreasureBox.json")} // User needs to provide this file
+            autoPlay
+            loop={true} // Play once for completion
+            style={styles.lottieAnimation}
+          />
+        </View>
         <TextInput
           style={styles.input}
           placeholder='Inserisci il tuo username'
@@ -172,6 +181,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "gray",
     textDecorationLine: "underline",
+  },
+  lottieAnimation: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
   },
 });
 
