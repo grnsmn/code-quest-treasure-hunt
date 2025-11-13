@@ -1,29 +1,29 @@
-import React, { useEffect } from "react";
-import { View, Text, Button, StyleSheet, Alert } from "react-native";
+import React from "react";
+import { View, Text, Button, StyleSheet } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { db } from "../config/firebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
+import LottieView from "lottie-react-native";
 
 const SuccessScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { userId, questionData } = route.params;
 
-  const handleNextStep = () => {
-    navigation.navigate("Register");
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Risposta Corretta!</Text>
+      <View>
+        <LottieView
+          source={require("../../assets/lottie/LocationFinding.json")} // User needs to provide this file
+          autoPlay
+          loop
+          style={styles.lottieAnimation}
+        />
+      </View>
       <Text style={styles.clueHeader}>Ecco il tuo prossimo indizio:</Text>
       <Text style={styles.clueText}>{questionData.correctResponseText}</Text>
-      <View style={styles.buttonContainer}>
-        {/* <Button
-          title={"Continua il Gioco"}
-          onPress={handleNextStep}
-        /> */}
-      </View>
+      <View style={styles.buttonContainer}></View>
     </View>
   );
 };

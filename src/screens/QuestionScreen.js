@@ -48,7 +48,10 @@ const QuestionScreen = () => {
   }, []);
 
   const generateRedemptionCode = () => {
-    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const randomSuffix = Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase();
     return `DEVFEST-CT-2025-${randomSuffix}`;
   };
 
@@ -92,15 +95,15 @@ const QuestionScreen = () => {
           return;
         }
         questionToFetchOrder = parsedQuestionIdAsOrder;
+      } else if (questionId === undefined) {
+        // navigation.navigate("KeepGoing");
+        return;
       } else {
         questionToFetchOrder = userCurrentQuestionOrder;
       }
 
       const questionsRef = collection(db, "questions");
-      const q = query(
-        questionsRef,
-        where("order", "==", questionToFetchOrder)
-      );
+      const q = query(questionsRef, where("order", "==", questionToFetchOrder));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -149,10 +152,25 @@ const QuestionScreen = () => {
             currentQuestionOrder: nextQuestionOrder,
           });
 
-          navigation.navigate("Success", {
+          navigation.replace("Success", {
             userId: currentUserId,
             questionData: questionData,
           });
+
+          try {
+            // Update user's progress
+            const nextQuestionOrder = questionData.order + 1;
+            const userDocRef = doc(db, "users", userId);
+            await updateDoc(userDocRef, {
+              currentQuestionOrder: nextQuestionOrder,
+            });
+          } catch (error) {
+            console.error("Error updating user progress:", error);
+            Alert.alert(
+              "Errore",
+              "Impossibile aggiornare il tuo progresso. Riprova."
+            );
+          }
         }
       } catch (error) {
         console.error("Error updating user progress or navigating:", error);
