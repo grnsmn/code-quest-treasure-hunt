@@ -24,13 +24,6 @@ const linking = {
     screens: {
       Register: "register",
       Question: "question/:questionId",
-      // Success: "success",
-      // Unlock: "unlock",
-      // End: "end",
-      // AdminLogin: "admin",
-      // AdminDashboard: "admin/dashboard",
-      // ViewUsers: "admin/users",
-      // ManageQuestions: "admin/questions",
     },
   },
 };
@@ -55,7 +48,7 @@ const AppNavigator = () => {
         <Stack.Screen
           name='Success'
           component={SuccessScreen}
-          options={{ title: "Risposta Corretta!", headerBackVisible: false }}
+          options={{ headerShown: false, gestureEnabled: false }}
         />
 
         <Stack.Screen
