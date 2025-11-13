@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import LottieView from "lottie-react-native"; // Import LottieView
 
 const EndScreen = () => {
   const navigation = useNavigation();
@@ -29,6 +30,17 @@ const EndScreen = () => {
           </Text>
         </>
       )}
+
+      {/* Lottie Animation */}
+      <View>
+        <LottieView
+          source={require("../../assets/lottie/Champion.json")} // User needs to provide this file
+          autoPlay
+          loop={true} // Play once for completion
+          style={styles.lottieAnimation}
+        />
+      </View>
+
       <View style={styles.buttonContainer}>
         <Button title='Gioca di Nuovo' onPress={handlePlayAgain} />
       </View>
@@ -55,6 +67,14 @@ const styles = StyleSheet.create({
     color: "#1565c0", // Medium blue text
     textAlign: "center",
     marginBottom: 30,
+  },
+  lottieAnimation: {
+    width: 50, // Adjust size as needed
+    height: 50,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "#0d47a1",
+    borderRadius: 25,
   },
   redemptionCodeLabel: {
     fontSize: 18,
