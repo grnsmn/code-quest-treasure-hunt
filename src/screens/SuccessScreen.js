@@ -1,22 +1,18 @@
 import React from "react";
-import { View, Text, Button, StyleSheet, Alert } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
-import { db } from "../config/firebaseConfig";
-import { doc, updateDoc } from "firebase/firestore";
+import { View, Text, StyleSheet } from "react-native";
+import { useRoute } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import LottieView from "lottie-react-native";
 
 const SuccessScreen = () => {
   const route = useRoute();
-  const navigation = useNavigation();
-  const { userId, questionData } = route.params;
+  const { t } = useTranslation();
+  const { questionData } = route.params;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Risposta Corretta!</Text>
-      <Text style={styles.prepareCameraText}>
-        Tieni pronta la tua fotocamera: il prossimo indizio è nascosto in un
-        nuovo QR Code!
-      </Text>
+      <Text style={styles.title}>{t("success.correctAnswer")}</Text>
+      <Text style={styles.prepareCameraText}>{t("success.prepareCamera")}</Text>
       <View>
         <LottieView
           source={require("../../assets/lottie/LocationFinding.json")}
@@ -25,7 +21,7 @@ const SuccessScreen = () => {
           style={styles.lottieAnimation}
         />
       </View>
-      <Text style={styles.clueHeader}>Indizio per il prossimo QR Code:</Text>
+      <Text style={styles.clueHeader}>{t("success.clueHeader")}</Text>
       <Text style={styles.clueText}>{questionData.correctResponseText}</Text>
     </View>
   );
@@ -37,16 +33,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#e8f5e9", // A light green background
+    backgroundColor: "#e8f5e9",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#2e7d32", // Dark green text
+    color: "#2e7d32",
     marginBottom: 20,
   },
   lottieAnimation: {
-    width: 150, // Adjust size as needed
+    width: 150,
     height: 150,
     marginBottom: 20,
   },
@@ -61,16 +57,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 15,
     fontStyle: "italic",
-    marginBottom: 20, // Added margin for separation
+    marginBottom: 20,
   },
   prepareCameraText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "500",
     textAlign: "center",
     marginHorizontal: 15,
-    marginBottom: 30, // Increased margin for emphasis
+    marginBottom: 30,
     color: "#ec6464ff",
-    fontWeight: "500",
   },
   buttonContainer: {
     marginTop: 40,

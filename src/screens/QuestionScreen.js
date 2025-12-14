@@ -13,6 +13,7 @@ import {
   useNavigation,
   useFocusEffect,
 } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { db, auth } from "../config/firebaseConfig";
 import {
   collection,
@@ -28,6 +29,7 @@ import { onAuthStateChanged } from "firebase/auth";
 const QuestionScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const { questionId } = route.params || {};
 
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -68,7 +70,7 @@ const QuestionScreen = () => {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        Alert.alert("Errore", "Dati utente non trovati.");
+        Alert.alert(t("question.error"), t("question.userNotFound"));
         navigation.navigate("Register");
         return;
       }
@@ -81,22 +83,21 @@ const QuestionScreen = () => {
       if (questionId) {
         const parsedQuestionIdAsOrder = parseInt(questionId, 10);
         if (isNaN(parsedQuestionIdAsOrder)) {
-          Alert.alert("Errore", "ID domanda non valido.");
+          Alert.alert(t("question.error"), t("question.invalidQuestionId"));
           navigation.navigate("Register");
           return;
         }
 
         if (parsedQuestionIdAsOrder > userCurrentQuestionOrder) {
           Alert.alert(
-            "Domanda Bloccata",
-            "Non hai ancora sbloccato questa domanda. Rispondi a quella attuale per procedere."
+            t("question.questionLocked"),
+            t("question.questionLockedMessage")
           );
           navigation.navigate("Register");
           return;
         }
         questionToFetchOrder = parsedQuestionIdAsOrder;
       } else if (questionId === undefined) {
-        // navigation.navigate("KeepGoing");
         return;
       } else {
         questionToFetchOrder = userCurrentQuestionOrder;
@@ -115,7 +116,7 @@ const QuestionScreen = () => {
       setQuestionData({ id: questionDoc.id, ...questionDoc.data() });
     } catch (error) {
       console.error("Error fetching question: ", error);
-      Alert.alert("Errore", "Impossibile caricare la domanda.");
+      Alert.alert(t("question.error"), t("question.loadError"));
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +132,7 @@ const QuestionScreen = () => {
 
   const handleAnswer = async () => {
     if (!questionData) {
-      Alert.alert("Errore", "Dati della domanda non caricati.");
+      Alert.alert(t("question.error"), t("question.dataNotLoaded"));
       return;
     }
 
@@ -141,11 +142,9 @@ const QuestionScreen = () => {
 
       try {
         if (questionData.isLastQuestion === true) {
-          // Last question answered correctly
           const redemptionCode = generateRedemptionCode();
           navigation.navigate("End", { redemptionCode: redemptionCode });
         } else {
-          // Not the last question, update progress and go to Success
           const nextQuestionOrder = questionData.order + 1;
           const userDocRef = doc(db, "users", currentUserId);
           await updateDoc(userDocRef, {
@@ -156,39 +155,21 @@ const QuestionScreen = () => {
             userId: currentUserId,
             questionData: questionData,
           });
-
-          try {
-            // Update user's progress
-            const nextQuestionOrder = questionData.order + 1;
-            const userDocRef = doc(db, "users", userId);
-            await updateDoc(userDocRef, {
-              currentQuestionOrder: nextQuestionOrder,
-            });
-          } catch (error) {
-            console.error("Error updating user progress:", error);
-            Alert.alert(
-              "Errore",
-              "Impossibile aggiornare il tuo progresso. Riprova."
-            );
-          }
         }
       } catch (error) {
         console.error("Error updating user progress or navigating:", error);
-        Alert.alert(
-          "Errore",
-          "Impossibile aggiornare i tuoi progressi o navigare. Riprova."
-        );
+        Alert.alert(t("question.error"), t("question.updateErrorNav"));
       }
     } else {
-      setError("Risposta Sbagliata. Riprova! Sei quasi lì.");
+      setError(t("question.wrongAnswer"));
     }
   };
 
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size='large' color='#0000ff' />
-        <Text>Caricamento domanda...</Text>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>{t("question.loadingQuestion")}</Text>
       </View>
     );
   }
@@ -196,9 +177,9 @@ const QuestionScreen = () => {
   if (!questionData) {
     return (
       <View style={styles.container}>
-        <Text>Nessuna domanda trovata. Potresti aver finito il gioco!</Text>
+        <Text>{t("question.noQuestion")}</Text>
         <Button
-          title='Torna alla Home'
+          title={t("question.backHome")}
           onPress={() => navigation.navigate("Register")}
         />
       </View>
@@ -216,7 +197,7 @@ const QuestionScreen = () => {
         <Text style={styles.questionText}>{questionData.questionText}</Text>
         <TextInput
           style={styles.input}
-          placeholder='Scrivi la tua risposta qui'
+          placeholder={t("question.answerPlaceholder")}
           value={answer}
           onChangeText={(text) => {
             setAnswer(text);
@@ -226,7 +207,7 @@ const QuestionScreen = () => {
           }}
         />
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        <Button title='Conferma Risposta' onPress={handleAnswer} />
+        <Button title={t("question.submitButton")} onPress={handleAnswer} />
       </View>
     </View>
   );
@@ -235,14 +216,13 @@ const QuestionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // Removed justifyContent and alignItems from here to allow children to control their layout
     padding: 20,
-    alignItems: "stretch", // Allows children to stretch horizontally
+    alignItems: "stretch",
   },
   titleContainer: {
-    paddingTop: 20, // Add some padding from the top of the screen
+    paddingTop: 20,
     marginBottom: 20,
-    alignItems: "center", // Center the title horizontally
+    alignItems: "center",
   },
   titleText: {
     fontSize: 26,
@@ -250,10 +230,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   contentContainer: {
-    flex: 1, // Takes up remaining space
-    justifyContent: "center", // Centers content vertically
-    alignItems: "center", // Centers content horizontally
-    width: "100%", // Ensures content takes full width
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
   },
   questionText: {
     fontSize: 22,

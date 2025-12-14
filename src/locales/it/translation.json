@@ -1,0 +1,130 @@
+{
+  "app": {
+    "title": "Caccia al Tesoro",
+    "loading": "Caricamento..."
+  },
+  "register": {
+    "title": "Caccia al Tesoro",
+    "usernamePlaceholder": "Inserisci il tuo username",
+    "startButton": "Inizia o Continua il Gioco",
+    "adminButton": "Sei un Admin?",
+    "authError": "Errore di Autenticazione",
+    "authErrorMessage": "Impossibile connettersi ai servizi.",
+    "authInProgress": "Autenticazione in corso",
+    "authWait": "Per favore attendi un momento e riprova.",
+    "usernameRequired": "Username richiesto",
+    "usernameRequiredMessage": "Per favore, inserisci un username per iniziare.",
+    "welcome": "Benvenuto!",
+    "profileCreated": "Il tuo profilo è stato creato, {{username}}.",
+    "error": "Errore",
+    "startGameError": "Impossibile avviare il gioco. Controlla la tua connessione."
+  },
+  "question": {
+    "title": "Domanda",
+    "loadingQuestion": "Caricamento domanda...",
+    "noQuestion": "Nessuna domanda trovata. Potresti aver finito il gioco!",
+    "backHome": "Torna alla Home",
+    "answerPlaceholder": "Scrivi la tua risposta qui",
+    "submitButton": "Conferma Risposta",
+    "wrongAnswer": "Risposta sbagliata. Riprova! Sei quasi lì.",
+    "error": "Errore",
+    "userNotFound": "Dati utente non trovati.",
+    "invalidQuestionId": "ID domanda non valido.",
+    "questionLocked": "Domanda Bloccata",
+    "questionLockedMessage": "Non hai ancora sbloccato questa domanda. Rispondi a quella attuale per procedere.",
+    "loadError": "Impossibile caricare la domanda.",
+    "dataNotLoaded": "Dati della domanda non caricati.",
+    "updateError": "Impossibile aggiornare il tuo progresso. Riprova.",
+    "updateErrorNav": "Impossibile aggiornare i tuoi progressi o navigare. Riprova."
+  },
+  "admin": {
+    "login": {
+      "title": "Login Admin",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "loginButton": "Accedi",
+      "createButton": "Crea Account Admin",
+      "successTitle": "Successo",
+      "successMessage": "Login come admin effettuato.",
+      "accessDeniedTitle": "Accesso Negato",
+      "accessDeniedMessage": "Questo utente non ha i privilegi di amministratore.",
+      "missingFields": "Per favore, inserisci email e password.",
+      "loginErrorTitle": "Errore di Login",
+      "creationErrorTitle": "Errore di Creazione",
+      "accountCreatedTitle": "Account Creato",
+      "accountCreatedMessage": "Il tuo account è stato creato. Ora vai nella console di Firestore, trova questo utente e aggiungi il campo 'role' con valore 'admin', poi effettua il login."
+    },
+    "dashboard": {
+      "title": "Dashboard Admin",
+      "welcome": "Benvenuto, admin!",
+      "manageQuestions": "Gestisci Domande",
+      "viewUsers": "Visualizza Utenti",
+      "logout": "Logout"
+    },
+    "manageQuestions": {
+      "titleAdd": "Aggiungi Nuova Domanda",
+      "titleEdit": "Modifica Domanda",
+      "orderPlaceholder": "Ordine (es. 1, 2, 3)",
+      "questionPlaceholder": "Testo della Domanda",
+      "answerPlaceholder": "Risposta Corretta (tutto minuscolo)",
+      "correctResponsePlaceholder": "Testo Risposta Corretta / Indizio",
+      "unlockCodePlaceholder": "Codice Sblocco Domanda Successiva (lascia vuoto per l'ultima domanda)",
+      "addButton": "Aggiungi Domanda",
+      "updateButton": "Aggiorna Domanda",
+      "cancelEditButton": "Annulla Modifica",
+      "listHeader": "Domande Esistenti",
+      "orderLabel": "Ordine",
+      "answerLabel": "Risposta",
+      "clueLabel": "Indizio",
+      "unlockCodeLabel": "Codice Sblocco",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "emptyList": "Nessuna domanda ancora. Aggiungine una!",
+      "fetchError": "Impossibile caricare le domande esistenti.",
+      "requiredFields": "Per favore, compila tutti i campi obbligatori (Ordine, Domanda, Risposta, Testo Risposta Corretta).",
+      "orderNumber": "Il campo Ordine deve essere un numero.",
+      "saveSuccess": "Domanda aggiunta con successo!",
+      "updateSuccess": "Domanda aggiornata con successo!",
+      "saveError": "Impossibile salvare la domanda.",
+      "deleteConfirmTitle": "Conferma Eliminazione",
+      "deleteConfirmMessage": "Sei sicuro di voler eliminare questa domanda?",
+      "deleteSuccess": "Domanda eliminata con successo!",
+      "deleteError": "Impossibile eliminare la domanda."
+    },
+    "viewUsers": {
+      "title": "Lista Partecipanti",
+      "emailLabel": "Email",
+      "currentQuestionLabel": "Domanda Corrente",
+      "roleLabel": "Ruolo",
+      "rolePlayer": "Giocatore",
+      "notAvailable": "N/D",
+      "fetchError": "Impossibile caricare la lista utenti. Controlla le regole di sicurezza."
+    }
+  },
+  "success": {
+    "congratulations": "Congratulazioni!",
+    "correctAnswer": "Risposta corretta!",
+    "nextQuestion": "Prossima Domanda",
+    "prepareCamera": "Tieni pronta la tua fotocamera: il prossimo indizio è nascosto in un nuovo QR Code!",
+    "clueHeader": "Indizio per il prossimo QR Code:"
+  },
+  "end": {
+    "title": "Gioco Completato",
+    "congratulations": "Congratulazioni!",
+    "completedGame": "Hai completato il gioco!",
+    "redemptionCode": "Il tuo codice di riscatto:",
+    "instructions": "Mostra questa schermata e il codice al Desk Premi per ritirare il tuo Portachiavi Ufficiale della DevFest Challenge!",
+    "playAgain": "Gioca di Nuovo"
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "yes": "Sì",
+    "no": "No",
+    "languageEnglish": "Inglese",
+    "languageItalian": "Italiano"
+  }
+}

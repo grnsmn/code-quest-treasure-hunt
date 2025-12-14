@@ -1,15 +1,16 @@
 import React from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import LottieView from "lottie-react-native"; // Import LottieView
+import { useTranslation } from "react-i18next";
+import LottieView from "lottie-react-native";
 
 const EndScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useTranslation();
   const { redemptionCode } = route.params || {};
 
   const handlePlayAgain = () => {
-    // Reset the navigation stack to the Register screen
     navigation.reset({
       index: 0,
       routes: [{ name: "Register" }],
@@ -18,31 +19,29 @@ const EndScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>COMPLETATO!</Text>
-      <Text style={styles.subtitle}>Missione Riuscita!</Text>
+      <Text style={styles.title}>{t("end.title")}</Text>
+      <Text style={styles.subtitle}>{t("end.completedGame")}</Text>
       {redemptionCode && (
         <>
-          <Text style={styles.redemptionCodeLabel}>Codice di Riscossione:</Text>
-          <Text style={styles.redemptionCode}>{redemptionCode}</Text>
-          <Text style={styles.instructions}>
-            Mostra questa schermata e il codice al Desk Premi per ritirare il
-            tuo Portachiavi Ufficiale della DevFest Challenge!
+          <Text style={styles.redemptionCodeLabel}>
+            {t("end.redemptionCode")}
           </Text>
+          <Text style={styles.redemptionCode}>{redemptionCode}</Text>
+          <Text style={styles.instructions}>{t("end.instructions")}</Text>
         </>
       )}
 
-      {/* Lottie Animation */}
       <View>
         <LottieView
-          source={require("../../assets/lottie/Champion.json")} // User needs to provide this file
+          source={require("../../assets/lottie/Champion.json")}
           autoPlay
-          loop={true} // Play once for completion
+          loop={true}
           style={styles.lottieAnimation}
         />
       </View>
 
       <View style={styles.buttonContainer}>
-        <Button title='Gioca di Nuovo' onPress={handlePlayAgain} />
+        <Button title={t("end.playAgain")} onPress={handlePlayAgain} />
       </View>
     </View>
   );
@@ -54,22 +53,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#e3f2fd", // Light blue background
+    backgroundColor: "#e3f2fd",
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#0d47a1", // Dark blue text
+    color: "#0d47a1",
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 24, // Slightly larger for "Missione Riuscita!"
-    color: "#1565c0", // Medium blue text
+    fontSize: 24,
+    color: "#1565c0",
     textAlign: "center",
     marginBottom: 30,
   },
   lottieAnimation: {
-    width: 50, // Adjust size as needed
+    width: 50,
     height: 50,
     marginBottom: 20,
     borderWidth: 2,
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
   redemptionCode: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#d32f2f", // Red color for emphasis
+    color: "#d32f2f",
     textAlign: "center",
     marginBottom: 30,
   },
