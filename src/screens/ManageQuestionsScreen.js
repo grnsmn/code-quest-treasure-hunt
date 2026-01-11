@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { db } from "../config/firebaseConfig";
 import {
   collection,
@@ -37,6 +38,7 @@ const ManageQuestionsScreen = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const flatListRef = useRef(null);
+  const { t } = useTranslation();
 
   const fetchQuestions = async () => {
     setIsFetchingQuestions(true);
@@ -50,7 +52,7 @@ const ManageQuestionsScreen = () => {
       setQuestions(questionsList);
     } catch (error) {
       console.error("Error fetching questions: ", error);
-      Alert.alert("Errore", "Impossibile caricare le domande esistenti.");
+      Alert.alert(t("common.error"), t("admin.manageQuestions.fetchError"));
     } finally {
       setIsFetchingQuestions(false);
       setIsRefreshing(false);
@@ -78,20 +80,20 @@ const ManageQuestionsScreen = () => {
   const handleAddOrUpdateQuestion = async () => {
     if (!order || !questionText || !answer || !correctResponseText) {
       Alert.alert(
-        "Errore",
-        "Per favore, compila tutti i campi obbligatori (Ordine, Domanda, Risposta, Testo Risposta Corretta)."
+        t("common.error"),
+        t("admin.manageQuestions.requiredFields")
       );
       return;
     }
-    if (isNaN(parseInt(order))) {
-      Alert.alert("Errore", "Il campo Ordine deve essere un numero.");
+    if (isNaN(parseInt(order, 10))) {
+      Alert.alert(t("common.error"), t("admin.manageQuestions.orderNumber"));
       return;
     }
 
     setIsLoading(true);
     try {
       const questionData = {
-        order: parseInt(order),
+        order: parseInt(order, 10),
         questionText: questionText.trim(),
         answer: answer.trim().toLowerCase(),
         correctResponseText: correctResponseText.trim(),
@@ -103,17 +105,17 @@ const ManageQuestionsScreen = () => {
       if (editingQuestionId) {
         const questionRef = doc(db, "questions", editingQuestionId);
         await updateDoc(questionRef, questionData);
-        Alert.alert("Successo", "Domanda aggiornata con successo!");
+        Alert.alert(t("common.success"), t("admin.manageQuestions.updateSuccess"));
       } else {
         await addDoc(collection(db, "questions"), questionData);
-        Alert.alert("Successo", "Domanda aggiunta con successo!");
+        Alert.alert(t("common.success"), t("admin.manageQuestions.saveSuccess"));
       }
 
       clearForm();
       fetchQuestions();
     } catch (error) {
       console.error("Error adding/updating question: ", error);
-      Alert.alert("Errore", "Impossibile salvare la domanda.");
+      Alert.alert(t("common.error"), t("admin.manageQuestions.saveError"));
     } finally {
       setIsLoading(false);
     }
@@ -131,21 +133,27 @@ const ManageQuestionsScreen = () => {
 
   const handleDelete = async (questionId) => {
     Alert.alert(
-      "Conferma Eliminazione",
-      "Sei sicuro di voler eliminare questa domanda?",
+      t("admin.manageQuestions.deleteConfirmTitle"),
+      t("admin.manageQuestions.deleteConfirmMessage"),
       [
-        { text: "Annulla", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Elimina",
+          text: t("admin.manageQuestions.delete"),
           onPress: async () => {
             setIsLoading(true);
             try {
               await deleteDoc(doc(db, "questions", questionId));
-              Alert.alert("Successo", "Domanda eliminata con successo!");
+              Alert.alert(
+                t("common.success"),
+                t("admin.manageQuestions.deleteSuccess")
+              );
               fetchQuestions();
             } catch (error) {
               console.error("Error deleting question: ", error);
-              Alert.alert("Errore", "Impossibile eliminare la domanda.");
+              Alert.alert(
+                t("common.error"),
+                t("admin.manageQuestions.deleteError")
+              );
             } finally {
               setIsLoading(false);
             }
@@ -158,25 +166,38 @@ const ManageQuestionsScreen = () => {
 
   const renderQuestionItem = ({ item }) => (
     <View style={styles.questionItem}>
-      <Text style={styles.questionItemOrder}>Ordine: {item.order}</Text>
+      <Text style={styles.questionItemOrder}>
+        {t("admin.manageQuestions.orderLabel")}: {item.order}
+      </Text>
       <Text style={styles.questionItemText}>{item.questionText}</Text>
-      <Text>Risposta: {item.answer}</Text>
-      <Text>Indizio: {item.correctResponseText}</Text>
+      <Text>
+        {t("admin.manageQuestions.answerLabel")}: {item.answer}
+      </Text>
+      <Text>
+        {t("admin.manageQuestions.clueLabel")}: {item.correctResponseText}
+      </Text>
       {item.nextQuestionUnlockCode && (
-        <Text>Codice Sblocco: {item.nextQuestionUnlockCode}</Text>
+        <Text>
+          {t("admin.manageQuestions.unlockCodeLabel")}:{" "}
+          {item.nextQuestionUnlockCode}
+        </Text>
       )}
       <View style={styles.itemActions}>
         <TouchableOpacity
           onPress={() => handleEdit(item)}
           style={[styles.actionButton, styles.editButton]}
         >
-          <Text style={styles.actionButtonText}>Modifica</Text>
+          <Text style={styles.actionButtonText}>
+            {t("admin.manageQuestions.edit")}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleDelete(item.id)}
           style={[styles.actionButton, styles.deleteButton]}
         >
-          <Text style={styles.actionButtonText}>Elimina</Text>
+          <Text style={styles.actionButtonText}>
+            {t("admin.manageQuestions.delete")}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -185,39 +206,41 @@ const ManageQuestionsScreen = () => {
   const renderHeader = () => (
     <>
       <Text style={styles.title}>
-        {editingQuestionId ? "Modifica Domanda" : "Aggiungi Nuova Domanda"}
+        {editingQuestionId
+          ? t("admin.manageQuestions.titleEdit")
+          : t("admin.manageQuestions.titleAdd")}
       </Text>
       <TextInput
         style={styles.input}
-        placeholder="Ordine (es. 1, 2, 3)"
+        placeholder={t("admin.manageQuestions.orderPlaceholder")}
         value={order}
         onChangeText={setOrder}
         keyboardType="numeric"
       />
       <TextInput
         style={styles.input}
-        placeholder="Testo della Domanda"
+        placeholder={t("admin.manageQuestions.questionPlaceholder")}
         value={questionText}
         onChangeText={setQuestionText}
         multiline
       />
       <TextInput
         style={styles.input}
-        placeholder="Risposta Corretta (tutto minuscolo)"
+        placeholder={t("admin.manageQuestions.answerPlaceholder")}
         value={answer}
         onChangeText={setAnswer}
         autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
-        placeholder="Testo Risposta Corretta / Indizio"
+        placeholder={t("admin.manageQuestions.correctResponsePlaceholder")}
         value={correctResponseText}
         onChangeText={setCorrectResponseText}
         multiline
       />
       <TextInput
         style={styles.input}
-        placeholder="Codice Sblocco Domanda Successiva (lascia vuoto per l'ultima domanda)"
+        placeholder={t("admin.manageQuestions.unlockCodePlaceholder")}
         value={nextQuestionUnlockCode}
         onChangeText={setNextQuestionUnlockCode}
         autoCapitalize="none"
@@ -227,13 +250,17 @@ const ManageQuestionsScreen = () => {
       ) : (
         <View>
           <Button
-            title={editingQuestionId ? "Aggiorna Domanda" : "Aggiungi Domanda"}
+            title={
+              editingQuestionId
+                ? t("admin.manageQuestions.updateButton")
+                : t("admin.manageQuestions.addButton")
+            }
             onPress={handleAddOrUpdateQuestion}
           />
           {editingQuestionId && (
             <View style={styles.cancelButtonContainer}>
               <Button
-                title="Annulla Modifica"
+                title={t("admin.manageQuestions.cancelEditButton")}
                 onPress={clearForm}
                 color="gray"
               />
@@ -241,7 +268,9 @@ const ManageQuestionsScreen = () => {
           )}
         </View>
       )}
-      <Text style={styles.listHeader}>Domande Esistenti</Text>
+      <Text style={styles.listHeader}>
+        {t("admin.manageQuestions.listHeader")}
+      </Text>
     </>
   );
 
@@ -252,7 +281,11 @@ const ManageQuestionsScreen = () => {
     >
       <View style={styles.container}>
         {isFetchingQuestions ? (
-          <ActivityIndicator style={styles.loadingIndicator} size="large" color="#0000ff" />
+          <ActivityIndicator
+            style={styles.loadingIndicator}
+            size="large"
+            color="#0000ff"
+          />
         ) : (
           <FlatList
             ref={flatListRef}
@@ -262,7 +295,7 @@ const ManageQuestionsScreen = () => {
             ListHeaderComponent={renderHeader}
             ListEmptyComponent={
               <Text style={styles.emptyListText}>
-                Nessuna domanda ancora. Aggiungine una!
+                {t("admin.manageQuestions.emptyList")}
               </Text>
             }
             refreshControl={
@@ -289,8 +322,8 @@ const styles = StyleSheet.create({
   },
   loadingIndicator: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 24,

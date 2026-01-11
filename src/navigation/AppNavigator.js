@@ -2,11 +2,11 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Text } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import RegisterScreen from "../screens/RegisterScreen";
 import QuestionScreen from "../screens/QuestionScreen";
 import SuccessScreen from "../screens/SuccessScreen";
-
 import EndScreen from "../screens/EndScreen";
 import AdminLoginScreen from "../screens/AdminLoginScreen";
 import AdminDashboardScreen from "../screens/AdminDashboardScreen";
@@ -29,52 +29,53 @@ const linking = {
 };
 
 const AppNavigator = () => {
+  const { t } = useTranslation();
+
   return (
     <NavigationContainer
       linking={linking}
-      fallback={<Text>Caricamento...</Text>}
+      fallback={<Text>{t("app.loading")}</Text>}
     >
-      <Stack.Navigator initialRouteName='Register'>
+      <Stack.Navigator initialRouteName="Register">
         <Stack.Screen
-          name='Register'
+          name="Register"
           component={RegisterScreen}
-          options={{ title: "Gioca" }}
+          options={{ title: t("register.title") }}
         />
         <Stack.Screen
-          name='Question'
+          name="Question"
           component={QuestionScreen}
-          options={{ title: "Domanda" }}
+          options={{ title: t("question.title") }}
         />
         <Stack.Screen
-          name='Success'
+          name="Success"
           component={SuccessScreen}
           options={{ headerShown: false, gestureEnabled: false }}
         />
-
         <Stack.Screen
-          name='End'
+          name="End"
           component={EndScreen}
-          options={{ title: "Fine del Gioco" }}
+          options={{ title: t("end.title") }}
         />
         <Stack.Screen
-          name='AdminLogin'
+          name="AdminLogin"
           component={AdminLoginScreen}
-          options={{ title: "Accesso Admin" }}
+          options={{ title: t("admin.login.title") }}
         />
         <Stack.Screen
-          name='AdminDashboard'
+          name="AdminDashboard"
           component={AdminDashboardScreen}
-          options={{ title: "Pannello Admin" }}
+          options={{ title: t("admin.dashboard.title") }}
         />
         <Stack.Screen
-          name='ViewUsers'
+          name="ViewUsers"
           component={ViewUsersScreen}
-          options={{ title: "Lista Utenti" }}
+          options={{ title: t("admin.viewUsers.title") }}
         />
         <Stack.Screen
-          name='ManageQuestions'
+          name="ManageQuestions"
           component={ManageQuestionsScreen}
-          options={{ title: "Gestione Domande" }}
+          options={{ title: t("admin.dashboard.manageQuestions") }}
         />
       </Stack.Navigator>
     </NavigationContainer>

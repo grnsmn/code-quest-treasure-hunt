@@ -1,0 +1,130 @@
+{
+  "app": {
+    "title": "Treasure Hunt",
+    "loading": "Loading..."
+  },
+  "register": {
+    "title": "Treasure Hunt",
+    "usernamePlaceholder": "Enter your username",
+    "startButton": "Start or Continue Game",
+    "adminButton": "Are you an Admin?",
+    "authError": "Authentication Error",
+    "authErrorMessage": "Unable to connect to services.",
+    "authInProgress": "Authentication in Progress",
+    "authWait": "Please wait a moment and try again.",
+    "usernameRequired": "Username Required",
+    "usernameRequiredMessage": "Please enter a username to start.",
+    "welcome": "Welcome!",
+    "profileCreated": "Your profile has been created, {{username}}.",
+    "error": "Error",
+    "startGameError": "Unable to start the game. Check your connection."
+  },
+  "question": {
+    "title": "Question",
+    "loadingQuestion": "Loading question...",
+    "noQuestion": "No question found. You may have finished the game!",
+    "backHome": "Back to Home",
+    "answerPlaceholder": "Write your answer here",
+    "submitButton": "Submit Answer",
+    "wrongAnswer": "Wrong Answer. Try again! You're almost there.",
+    "error": "Error",
+    "userNotFound": "User data not found.",
+    "invalidQuestionId": "Invalid question ID.",
+    "questionLocked": "Question Locked",
+    "questionLockedMessage": "You haven't unlocked this question yet. Answer the current one to proceed.",
+    "loadError": "Unable to load the question.",
+    "dataNotLoaded": "Question data not loaded.",
+    "updateError": "Unable to update your progress. Please try again.",
+    "updateErrorNav": "Unable to update your progress or navigate. Please try again."
+  },
+  "admin": {
+    "login": {
+      "title": "Admin Login",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "loginButton": "Login",
+      "createButton": "Create Admin Account",
+      "successTitle": "Success",
+      "successMessage": "Logged in as admin.",
+      "accessDeniedTitle": "Access Denied",
+      "accessDeniedMessage": "This user does not have administrator privileges.",
+      "missingFields": "Please enter email and password.",
+      "loginErrorTitle": "Login Error",
+      "creationErrorTitle": "Creation Error",
+      "accountCreatedTitle": "Account Created",
+      "accountCreatedMessage": "Your account has been created. Now go to the Firestore console, find this user and add the field 'role' with value 'admin', then log in."
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "welcome": "Welcome, admin!",
+      "manageQuestions": "Manage Questions",
+      "viewUsers": "View Users",
+      "logout": "Logout"
+    },
+    "manageQuestions": {
+      "titleAdd": "Add New Question",
+      "titleEdit": "Edit Question",
+      "orderPlaceholder": "Order (e.g., 1, 2, 3)",
+      "questionPlaceholder": "Question Text",
+      "answerPlaceholder": "Correct Answer (all lowercase)",
+      "correctResponsePlaceholder": "Correct Response Text / Clue",
+      "unlockCodePlaceholder": "Next Question Unlock Code (leave empty for the last question)",
+      "addButton": "Add Question",
+      "updateButton": "Update Question",
+      "cancelEditButton": "Cancel Edit",
+      "listHeader": "Existing Questions",
+      "orderLabel": "Order",
+      "answerLabel": "Answer",
+      "clueLabel": "Clue",
+      "unlockCodeLabel": "Unlock Code",
+      "edit": "Edit",
+      "delete": "Delete",
+      "emptyList": "No questions yet. Add one!",
+      "fetchError": "Unable to load existing questions.",
+      "requiredFields": "Please fill in all required fields (Order, Question, Answer, Correct Response Text).",
+      "orderNumber": "The Order field must be a number.",
+      "saveSuccess": "Question added successfully!",
+      "updateSuccess": "Question updated successfully!",
+      "saveError": "Unable to save the question.",
+      "deleteConfirmTitle": "Confirm Deletion",
+      "deleteConfirmMessage": "Are you sure you want to delete this question?",
+      "deleteSuccess": "Question deleted successfully!",
+      "deleteError": "Unable to delete the question."
+    },
+    "viewUsers": {
+      "title": "Participants List",
+      "emailLabel": "Email",
+      "currentQuestionLabel": "Current Question",
+      "roleLabel": "Role",
+      "rolePlayer": "Player",
+      "notAvailable": "N/A",
+      "fetchError": "Unable to load the user list. Check the security rules."
+    }
+  },
+  "success": {
+    "congratulations": "Congratulations!",
+    "correctAnswer": "Correct answer!",
+    "nextQuestion": "Next Question",
+    "prepareCamera": "Get your camera ready: the next clue is hidden in a new QR Code!",
+    "clueHeader": "Clue for the next QR Code:"
+  },
+  "end": {
+    "title": "Game Completed",
+    "congratulations": "Congratulations!",
+    "completedGame": "You have completed the game!",
+    "redemptionCode": "Your redemption code:",
+    "instructions": "Show this screen and the code at the Prize Desk to collect your official DevFest Challenge keychain!",
+    "playAgain": "Play Again"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "languageEnglish": "English",
+    "languageItalian": "Italian"
+  }
+}

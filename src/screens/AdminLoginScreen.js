@@ -1,70 +1,92 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { auth, db } from '../config/firebaseConfig';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import { auth, db } from "../config/firebaseConfig";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const AdminLoginScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   const checkAdminRoleAndNavigate = async (user) => {
     if (!user) return;
-    const userDocRef = doc(db, 'users', user.uid);
+    const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
 
-    if (userDoc.exists() && userDoc.data().role === 'admin') {
-      Alert.alert('Successo', 'Login come admin effettuato.');
-      navigation.navigate('AdminDashboard');
+    if (userDoc.exists() && userDoc.data().role === "admin") {
+      Alert.alert(t("common.success"), t("admin.login.successMessage"));
+      navigation.navigate("AdminDashboard");
     } else {
-      Alert.alert('Accesso Negato', 'Questo utente non ha i privilegi di amministratore.');
+      Alert.alert(
+        t("admin.login.accessDeniedTitle"),
+        t("admin.login.accessDeniedMessage")
+      );
       auth.signOut();
     }
   };
 
   const handleLogin = async () => {
-    if (email === '' || password === '') {
-      Alert.alert('Errore', 'Per favore, inserisci email e password.');
+    if (email === "" || password === "") {
+      Alert.alert(t("common.error"), t("admin.login.missingFields"));
       return;
     }
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       await checkAdminRoleAndNavigate(userCredential.user);
     } catch (error) {
-      Alert.alert('Errore di Login', error.message);
+      Alert.alert(t("admin.login.loginErrorTitle"), error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCreateAccount = async () => {
-    if (email === '' || password === '') {
-      Alert.alert('Errore', 'Per favore, inserisci email e password.');
+    if (email === "" || password === "") {
+      Alert.alert(t("common.error"), t("admin.login.missingFields"));
       return;
     }
     setIsLoading(true);
     try {
-      // 1. Create user in Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
-      // 2. Create user document in Firestore
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, "users", user.uid);
       await setDoc(userDocRef, {
-        username: email.split('@')[0], // Use part of email as initial username
+        username: email.split("@")[0],
         email: email,
       });
 
       Alert.alert(
-        'Account Creato',
-        "Il tuo account è stato creato. Ora vai nella console di Firestore, trova questo utente e aggiungi il campo 'role' con valore 'admin', poi effettua il login."
+        t("admin.login.accountCreatedTitle"),
+        t("admin.login.accountCreatedMessage")
       );
     } catch (error) {
-      Alert.alert('Errore di Creazione', error.message);
+      Alert.alert(t("admin.login.creationErrorTitle"), error.message);
     } finally {
       setIsLoading(false);
     }
@@ -72,10 +94,10 @@ const AdminLoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Accesso Admin</Text>
+      <Text style={styles.title}>{t("admin.login.title")}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder={t("admin.login.emailPlaceholder")}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -83,7 +105,7 @@ const AdminLoginScreen = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder={t("admin.login.passwordPlaceholder")}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -92,9 +114,13 @@ const AdminLoginScreen = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <View style={styles.buttonContainer}>
-          <Button title="Login" onPress={handleLogin} />
+          <Button title={t("admin.login.loginButton")} onPress={handleLogin} />
           <View style={styles.separator} />
-          <Button title="Crea Account Admin" onPress={handleCreateAccount} color="#841584" />
+          <Button
+            title={t("admin.login.createButton")}
+            onPress={handleCreateAccount}
+            color="#841584"
+          />
         </View>
       )}
     </View>
@@ -104,19 +130,19 @@ const AdminLoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 20,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
@@ -127,7 +153,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 10,
-  }
+  },
 });
 
 export default AdminLoginScreen;

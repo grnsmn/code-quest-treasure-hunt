@@ -14,8 +14,11 @@ import { db, auth } from "../config/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import LottieView from "lottie-react-native";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const RegisterScreen = () => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -43,8 +46,8 @@ const RegisterScreen = () => {
       } catch (error) {
         console.error("Authentication process failed:", error);
         Alert.alert(
-          "Errore di Autenticazione",
-          "Impossibile connettersi ai servizi."
+          t("register.authError"),
+          t("register.authErrorMessage")
         );
         setIsLoading(false);
       }
@@ -56,15 +59,15 @@ const RegisterScreen = () => {
   const handleStartGame = async () => {
     if (!user) {
       Alert.alert(
-        "Autenticazione in corso",
-        "Per favore attendi un momento e riprova."
+        t("register.authInProgress"),
+        t("register.authWait")
       );
       return;
     }
     if (username.trim() === "") {
       Alert.alert(
-        "Username richiesto",
-        "Per favore, inserisci un username per iniziare."
+        t("register.usernameRequired"),
+        t("register.usernameRequiredMessage")
       );
       return;
     }
@@ -81,8 +84,8 @@ const RegisterScreen = () => {
         };
         await setDoc(userDocRef, newUserProfile);
         Alert.alert(
-          "Benvenuto!",
-          `Il tuo profilo è stato creato, ${username}.`
+          t("register.welcome"),
+          t("register.profileCreated", { username: username })
         );
       }
 
@@ -97,8 +100,8 @@ const RegisterScreen = () => {
     } catch (error) {
       console.error("Error starting game: ", error);
       Alert.alert(
-        "Errore",
-        "Impossibile avviare il gioco. Controlla la tua connessione."
+        t("register.error"),
+        t("register.startGameError")
       );
     } finally {
       setIsLoading(false);
@@ -116,8 +119,11 @@ const RegisterScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.languageSwitcher}>
+        <LanguageSwitcher />
+      </View>
       <View style={styles.mainContent}>
-        <Text style={styles.title}>Caccia al Tesoro</Text>
+        <Text style={styles.title}>{t("register.title")}</Text>
         <View>
           <LottieView
             source={require("../../assets/lottie/TreasureBox.json")} // User needs to provide this file
@@ -128,18 +134,18 @@ const RegisterScreen = () => {
         </View>
         <TextInput
           style={styles.input}
-          placeholder='Inserisci il tuo username'
+          placeholder={t("register.usernamePlaceholder")}
           value={username}
           onChangeText={setUsername}
           autoCapitalize='none'
         />
-        <Button title='Inizia o Continua il Gioco' onPress={handleStartGame} />
+        <Button title={t("register.startButton")} onPress={handleStartGame} />
       </View>
       <TouchableOpacity
         style={styles.adminButton}
         onPress={() => navigation.navigate("AdminLogin")}
       >
-        <Text style={styles.adminButtonText}>Sei un Admin?</Text>
+        <Text style={styles.adminButtonText}>{t("register.adminButton")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -186,6 +192,9 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 20,
+  },
+  languageSwitcher: {
+    alignItems: "flex-end",
   },
 });
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import AppNavigator from './src/navigation/AppNavigator';
+import './i18n'; // Inicializar i18next
 
 // Suppress a specific warning about non-serializable values in navigation state.
 // This is common in development when passing complex objects or functions,
