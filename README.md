@@ -126,8 +126,8 @@ The application uses `i18next` for internationalization. Supported languages are
 
 Thanks to all the volunteers who contributed to this project! 🙏
 
-| Contributor | Contribution |
-|:-----------:|:-------------|
+|                  Contributor                   | Contribution                                                                                                                                |
+| :--------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | [@MarcoCaamal](https://github.com/MarcoCaamal) | [Internationalization integration](https://github.com/MarcoCaamal/code-quest-treasure-hunt/commit/0dcf2e5eaf16c1b71d975fe13c6dc00eea429f5f) |
 
 ---
