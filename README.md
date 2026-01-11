@@ -97,6 +97,7 @@ There are no database seeding or migration commands required to start.
 3.  From the dashboard, they can:
     - **View Users**: See a list of all registered players.
     - **Manage Questions**: Add, edit, or delete questions for the treasure hunt.
+    - **Participant Counter**: _(Under Development - See [Issue #5](https://github.com/grnsmn/code-quest-treasure-hunt/issues/5))_ This feature aims to display the total number of registered participants for each treasure hunt directly in the admin dashboard.
 
 ## Deployment
 
